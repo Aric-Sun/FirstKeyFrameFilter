@@ -5,7 +5,7 @@
   <executable name="FirstKeyFrameFilter" wrapperType="embed" executableDir="." executableMode="console" singleInstance="true">
     <versionInfo include="true" fileDescription="缺帧flv处理程序" legalCopyright="zsunqian69@gmail.com" companyName="Avengers" productVersion="1.0.0-20.9.5" />
   </executable>
-  <java mainClass="Main" minVersion="1.5" maxVersion="1.8">
+  <java mainClass="Main" minVersion="1.6" maxVersion="1.8">
     <searchSequence>
       <directory location="./jre1.8.0_161" />
       <registry />

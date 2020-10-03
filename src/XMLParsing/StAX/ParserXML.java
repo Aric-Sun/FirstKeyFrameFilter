@@ -183,7 +183,17 @@ public class ParserXML {
                             double secondKeyFrameTime = TimeStamp2Double(
                                     frameList.get(cntKeyFrame-1).getTimeStamp()
                             );
-                            if (secondKeyFrameTime >= 1){
+                            /* 2020年10月4日
+                            * 由于发现了存在0.15s这种不常见的KetFrame，遂修改。
+                            * （20201002-213047-素颜~！就今天！！！-856.flv）
+                            * 当初设定的初衷是防止切割到0s，
+                            * 因为两个0s的KeyFrame经常会一起出现，
+                            * 而设置到>=1s的原因是，当时认为1s内的音画不同步可以被接受
+                            * 事实上还是估算失误。即使是0.15s，也会被辨认出来。
+                            * 以B站播放器的尿性，这0.15s足以被放大成影响观看体验的地步
+                            * 遂修改为不为0的正数。
+                            * */
+                            if (secondKeyFrameTime > 0){
                                 return secondKeyFrameTime;
                             }
                         }
