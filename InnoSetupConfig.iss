@@ -2,7 +2,7 @@
 ; 有关创建 Inno Setup 脚本文件的详细资料请查阅帮助文档！
 
 #define MyAppName "FirstKeyFrameFilter"
-#define MyAppVersion "1.0.0-20.9.5"
+#define MyAppVersion "1.0.1-20.10.4"
 #define MyAppPublisher "zsunqian69@gmail.com"
 #define MyAppURL "https://github.com/Aric-Sun/FirstKeyFrameFilter"
 #define MyAppExeName "FirstKeyFrameFilter.exe"
@@ -25,8 +25,8 @@ AllowNoIcons=yes
 ; 移除以下行，以在管理安装模式下运行（为所有用户安装）。
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
-OutputDir=D:\Downloads\new\FirstKeyFrameFilter
-OutputBaseFilename=FirstKeyFrameFilter1.1.0-20.9.5_Setup
+OutputDir=D:\Downloads\FirstKeyFrameFilter\out\artifacts\FirstKeyFrameFilter_jar
+OutputBaseFilename=FirstKeyFrameFilter1.0.1-20.10.4_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
