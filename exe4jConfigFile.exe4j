@@ -3,7 +3,7 @@
   <directoryPresets config="./lib-apps" />
   <application name="FirstKeyFrameFilter" distributionSourceDir="D:/Downloads/FirstKeyFrameFilter/out/artifacts/FirstKeyFrameFilter_jar" />
   <executable name="FirstKeyFrameFilter" wrapperType="embed" executableDir="." executableMode="console" singleInstance="true">
-    <versionInfo include="true" fileDescription="缺帧flv处理程序" legalCopyright="zsunqian69@gmail.com" companyName="Avengers" productVersion="1.0.0-20.9.5" />
+    <versionInfo include="true" fileDescription="缺帧flv处理程序" legalCopyright="zsunqian69@gmail.com" companyName="Avengers" productVersion="1.0.1-20.10.4" />
   </executable>
   <java mainClass="Main" minVersion="1.6" maxVersion="1.8">
     <searchSequence>
