@@ -24,7 +24,7 @@ public class XMLReader {
             SAXParser saxParser = saxParserFactory.newSAXParser();
             saxParser.parse(new File("xml/352-TypicalCase.xml"),frameHandler);
             List<Frame> frameList = frameHandler.getFrameList();
-//            System.out.println(frameList);
+            System.out.println(frameList);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }

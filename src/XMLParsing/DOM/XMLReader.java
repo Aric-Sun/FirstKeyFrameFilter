@@ -1,5 +1,6 @@
 package XMLParsing.DOM;
 
+import Utils.DataTypeConverter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -86,21 +87,12 @@ public class XMLReader {
                 此处因废用而不再修复
                  */
                 if (CntKeyFrame == 3){
-                    System.out.println(TimeStamp2Double(timeStamp));
+                    System.out.println(DataTypeConverter.TimeStamp2Double(timeStamp));
                     break;
                 }
             }
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /*
-     * function: 将timestamp的PTxx.xxS通过正则匹配出浮点型数据
-     * @Param: [timeStamp时间戳]
-     * @Return: java.lang.Double
-     */
-    public static Double TimeStamp2Double(String timeStamp){
-        return Double.parseDouble(timeStamp.replaceAll("[^\\d.]", ""));
     }
 }

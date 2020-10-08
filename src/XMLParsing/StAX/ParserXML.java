@@ -1,5 +1,6 @@
 package XMLParsing.StAX;
 
+import Utils.DataTypeConverter;
 import dto.Frame;
 
 import javax.xml.stream.XMLInputFactory;
@@ -11,8 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import static XMLParsing.DOM.XMLReader.TimeStamp2Double;
 
 /**
  * StAX解析XML
@@ -42,9 +41,9 @@ import static XMLParsing.DOM.XMLReader.TimeStamp2Double;
 public class ParserXML {
     private Frame frame;
 
-    public List<Frame> getFrameList() {
+    /*public List<Frame> getFrameList() {
         return frameList;
-    }
+    }*/
 
     private List<Frame> frameList;
 
@@ -180,7 +179,7 @@ public class ParserXML {
                         * */
                         int cntKeyFrame = frameList.size();
                         if (cntKeyFrame >= 2){
-                            double secondKeyFrameTime = TimeStamp2Double(
+                            double secondKeyFrameTime = DataTypeConverter.TimeStamp2Double(
                                     frameList.get(cntKeyFrame-1).getTimeStamp()
                             );
                             /* 2020年10月4日

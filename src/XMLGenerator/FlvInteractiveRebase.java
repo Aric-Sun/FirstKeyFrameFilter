@@ -1,7 +1,6 @@
 package XMLGenerator;
 
 import Utils.RuntimeUtils.LocalCmdExecutor;
-import Utils.RuntimeUtils.ResourcesRelease;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -11,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.stream.Stream;
+
+import Utils.FileUtils.FilenameUtils;
 
 /**
  * 调用fib读取flv
@@ -37,9 +38,8 @@ public class FlvInteractiveRebase {
 //        Path flvFileName = flvPath.getFileName();  // flv文件名，带后缀，不带路径
 //        Path flvFolderPath = flvPath.getParent();  // flv所在目录路径
 //        String flvPathStr = String.valueOf(flvPath);
-        String xmlPath = flvPath.substring(0,
-                flvPath.lastIndexOf(".")
-        ).concat(".xml");  // 生成xml的绝对路径
+        String xmlPath = FilenameUtils.getFilenameWithoutExtension(flvPath)
+                .concat(".xml");  // 生成xml的绝对路径
 
         //判断目标生成文件是否存在，询问是否覆盖
         Path XMLPath = Paths.get(xmlPath);

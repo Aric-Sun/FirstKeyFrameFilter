@@ -1,5 +1,6 @@
 package FLVCutter;
 
+import Utils.FileUtils.FilenameUtils;
 import Utils.RuntimeUtils.LocalCmdExecutor;
 
 import java.io.*;
@@ -32,9 +33,8 @@ public class FastForwardMpeg {
             return "-23";
         }
         // 最终生成的文件
-        String flvPathCut = flvPath.substring(
-                0, flvPath.indexOf(".")
-        ) + "-cut_" + ssTime + "-end.flv";
+        String flvPathCut = FilenameUtils.getFilenameWithoutExtension(flvPath)
+                 + "-cut_" + ssTime + "-end.flv";
 
         //判断目标生成文件是否存在，询问是否覆盖
         Path FLVPathCut = Paths.get(flvPathCut);
@@ -57,6 +57,7 @@ public class FastForwardMpeg {
                 "-i", flvPath,
                 "-ss", String.valueOf(ssTime),
                 "-c", "copy",
+                "-copyts",  // keep the original timestamps
                 flvPathCut};
 
         // 执行命令
