@@ -30,41 +30,30 @@
 + FlvInteractiveRebase（fib，FLV 文件编辑工具）
 
   + [录播姬QQ群](https://jq.qq.com/?_wv=1027&k=pJMpD57V)内部测试版 beta 1
-
   + By genteure ( fib-beta@danmuji.org )
-
   + 软件核心功能：
-
       - 对 FLV 进行 Tag 级别编辑处理，可用于解决各类奇葩问题
       - 使用简单的文本文件作为命令格式，方便手工编辑...
       - ...同时也方便编写脚本，实现自动化处理
       - 命令文件相对更小易于传输，方便协助不太懂 FLV 细节的人修复文件
-
-    + 软件主要用法：
-
-      - 注：假设软件文件名为 fib	
-
-      1. **读取 FLV 文件，生成命令文件**（本项目所依赖）
-          `./fib parse 有问题的.flv 命令.xml`
-
-      2. 读取其他供参考或复制数据的 FLV 文件
-          `./fib parse 其他.flv 其他命令.xml`
-
+  + 软件主要用法（假设软件文件名为 fib）：
+      1. **读取 FLV 文件，生成命令文件**（本项目所依赖）  
+         `./fib parse 有问题的.flv 命令.xml`
+      2. 读取其他供参考或复制数据的 FLV 文件  
+         `./fib parse 其他.flv 其他命令.xml`
       3. 手动编辑命令文本文件
-
-      4. 使用修改过的命令文件生成新的 FLV 文件
-          `./fib build 命令.xml 修复之后.flv`
-
-      - 查看帮助请运行
-          `./fib help`
-
+      4. 使用修改过的命令文件生成新的 FLV 文件  
+         `./fib build 命令.xml 修复之后.flv`
+      - 查看帮助请运行  
+         `./fib help`
+  
 + [ffmpeg](https://ffmpeg.org/)
-
+  
   + 主要用来进行 FLV 无损切割
 
 ## 目录结构描述
 
-需按以下结构放置程序，保证相对位置，否则无法运行。
+须按以下结构放置程序，保证相对位置，否则无法运行。
 
 ```
 FirstKeyFrameFilter
