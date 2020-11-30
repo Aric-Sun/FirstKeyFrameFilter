@@ -1,64 +1,66 @@
 # FirstKeyFrameFilter
 
-## 主要功能
+[简体中文 | Simplified Chinese](README_CN.md)
 
-解决录播文件[缺帧](#问题描述)的问题，免去[手动操作](#方案优化)的过程
+## Feature
 
-## 项目背景
+Solve the problem of recording file [missing frame](#Problem description), eliminates the process of [manual operation](#Solution optimization)
 
-### 问题描述
+## Background
 
-在我做直播录像的时候，经常会发现录下来的视频文件开头部分**缺帧**，具体表现为：
+### Problem Description
 
-- 在 PotPlayer 上，视频开头部分画面是不动的，但是有声音。
-- 在 mpv 上，时间帧自动跳到几秒后。
-- 投稿到B站上，如果没有二压的话（现在应该全面二压了），会把没有画面的部分剔除掉，后面的画面提前，从而造成**音画严重不同步**。（主要影响。因为播放器是可以自动校对时间轴的，不怎么影响观看体验）
+When I do live video recording, I often find that the beginning of the recorded video file is **missing frames**. The specific performance is: 
 
-#### 触发条件
+- On PotPlayer, the picture at the beginning of the video is still, but the sound continues.
+- On mpv, the time frame automatically jumps to a few seconds later.
+- When contributing to bilibili, if there is no secondary suppression which should be fully suppressed twice now, bilibili will remove the part without the picture and advance the subsequent pictures, resulting in a **serious out of sync of the sound and picture**. (The main impact. it does not affect the viewing experience much, because the player can automatically check the timeline.)
 
-由于我并没有去大量拉流其他主播的直播去验证问题的普遍性，因此本项目并不具有普适性。仅根据个人见闻来说，这种问题还是比较小众的，很可能只有这一个主播经常会有这种问题，至少在我另外一个录的主播没出现过这种问题。个人猜测是主播开播操作上有问题，这和她每次开播不先开麦克风<u>可能</u>有点关系，反正看起来不像是服务器的锅，也不像[录播姬](https://rec.danmuji.org)的锅。
+#### Triggering Conditions
 
-- 主播：[一只萌豌豆](https://live.bilibili.com/1123)
-- 录播工具：[录播姬](https://rec.danmuji.org)，版本：1.1.18
+Since I did not go to a large number of live broadcasts of other anchors to verify the universality of the problem, this project is not universal. According to my personal experience, this kind of problem is relatively small. It is very likely that only this one anchor often has this kind of problem, at least it hasn't happened in another anchor I recorded. My personal guess is that there is a problem with the host’s start-up operation, which has something to do with her not turning on the microphone every time she starts the broadcast, <u>maybe</u>. Anyway, it doesn’t look like the server’s or [BililiveRecorder](  https://rec.danmuji.org)'s problem.
 
-### 初步解决方案
+- Anchor: [一只萌豌豆](https://live.bilibili.com/1123)
+- Recording tools: [BililiveRecorder](https://rec.danmuji.org)，Version: 1.1.18
 
-针对此问题，比较无脑的方案是重新转码压制（格式工厂/小丸工具箱），但这个方案占用时间长，资源消耗多，相当不适合我这种轻薄本。无损切割才是适合我的方案，利用 ffmpeg 的`-ss`和`-c copy`参数可以将缺帧的部分**快速**切除掉（只需切除开头的缺帧，如果末尾有缺帧是不会造成B站视频音画不同步的，而且一般也没有），那么这个`-ss`参数的值就是画面刚开始动的时间。
+### Initial Solution
 
-### 原理解释
+To solve this problem, the more brainless solution is to re-transcode and suppress (Format Factory/Maruko's Toolbox), but this solution takes a long time and consumes a lot of resources, which is not suitable for my thin and light notebook. Non-destructive cutting is the solution that suits me. Using the `-ss` and `-c copy` parameters of ffmpeg, the missing frame can be quickly cut off (just cut the missing frame at the beginning, if there is a missing frame at the end, it will not cause the video, audio and picture of station B to be out of sync, and generally there is no), then the value of the `-ss` parameter is the time when the screen just started moving.
 
-上面这句话很好理解，哪里没问题了就从哪里开始，但这会牵扯到另外的问题，就是在这个数值的位置上为什么视频会开始动，这就要解释一下关键帧的原理了。视频帧是根据上一帧的数据进行画面偏移（offset）的，一个一个往前溯源，最终会找到前面的一个关键帧。如果找不到关键帧，播放器会不知道该怎么处理到下一个关键帧之前的帧数据，这就造成了缺帧。这里的关键帧指的是原始视频的关键帧，而不是视频切割后自动打上的关键帧（文件头）（视频开头没有关键帧播放器是认不出来的）。那么在非关键帧上切一刀，必然会造成视频的缺帧。参考 [cv4373238](https://www.bilibili.com/read/cv4373238)。
+### Principle Explanation
 
-### 进阶解决方案
+The above sentence is easy to understand. Start wherever there is no problem, but this will involve another problem, that is, why the video will start to move at this value position, which needs to explain the principle of key frames. The video frame is offset according to the data of the previous frame, and the source is traced forward one by one, and the previous key frame will be found. If the key frame is not found, the player will not know how to deal with the frame data before the next key frame, which causes frame loss. The key frame here refers to the key frame of the original video, not the key frame (file header) automatically marked after the video is cut (the player will not recognize the key frame without the key frame at the beginning of the video). Then a cut on the non-key frames will inevitably cause the missing frames of the video, which refers to [cv4373238](https://www.bilibili.com/read/cv4373238).
 
-一开始的时候，我是肉眼看的，以1s为单位不断加减（零点几秒肉眼难以估算），有的时候会被 ffmpeg 纠正（`-ss`参数是让 ffmpeg 在此处**周围**寻找（seeking）关键帧，参考 [ffmpeg 官方文档](http://trac.ffmpeg.org/wiki/Seeking) ），大部分时候会造成新的缺帧，就是 ffmpeg 在有限的范围内并没有找到关键帧，如果比实际的关键帧提前了，那么缺帧的时长会短那么一点点；如果切在关键帧后，那么生成的视频会缺帧到下一个关键帧。此时再微调的话，无疑是很浪费时间的，那么，如何获得准确的关键帧位置呢？借由 genteure 的 fib（详见[项目依赖](#项目依赖)），可以在其解析出的 XML文件中找到**第二个**关键帧的位置，然后用 ffmpeg 对此位置进行切割（将第二个关键帧时间赋值给`-ss`参数）。
+### Advanced Solutions
 
-### 方案优化
+At the beginning, I saw it with the naked eye, adding and subtracting in units of 1s (a few tenths of a second is difficult to estimate with the naked eye). Sometimes it will be corrected by ffmpeg (The `-ss` parameter is to let ffmpeg find (seeking) keyframes **around here**, which refers to [ffmpeg official documentation](http://trac.ffmpeg.org/wiki/Seeking)), most of the time it will cause new missing frames, that is, ffmpeg did not find the key frame in a limited range. If it is earlier than the actual key frame, the duration of the missing frame will be a little shorter; if it is cut after the key frame, then the generated video will miss the frame to the next key frame. If you fine-tune it at this time, it will undoubtedly be a waste of time. So, how to get the accurate key frame position? With Genteure's fib (see [Project Dependence](#Project Dependency)), you can find the location of the **second** key frame in the parsed XML file, and then use ffmpeg to cut this location (  Assign the second key frame time to the `-ss` parameter).
 
-长此以往，我逐渐觉得，每天进行这样的操作有些繁琐，细数一下操作的步骤：
+### Solution Optimization
 
-1. 使用 fib 分析 FLV ，得到 xml，命令行 e.g.：`fib parse test.flv out.xml`
-2. 打开 XML搜索第二个 keyframe 属性，找到同一行的时间值
-3. 使用 ffmpeg 对得到的时间进行视频切割，命令行 e.g.：`ffmpeg -i test.flv -ss 8.3 -c copy test-cut.flv`
+If things go on like this, I gradually feel that it is a bit cumbersome to perform such operations every day. Let me count the steps in detail:
 
-其中包含两个问题：
+1. Use fib to analyze FLV and get XML. command line e.g.：`fib parse test.flv out.xml`
+2. Open the XML, search for the second keyframe attribute, find the time value of the same row
+3. Video cutting of the resulting time using ffmpeg. command line e.g.：`ffmpeg -i test.flv -ss 8.3 -c copy test-cut.flv`
 
-1. 每天重复输入相似的命令，而且工具没有加入环境变量的话，需要通过拖拽把路径拉进cmd，而且录播的文件名通常很长，也需要拖拽
-2. XML 文件大小随 FLV 文件大小而定，基于方便管理和容错的原因，设置了[录播姬](https://rec.danmuji.org/)的自动切片时长为一个小时，一个 4Mbps 码率的直播录像，一个小时大概有 1.78GB 左右大小，相对的，XML也起码有 28.5MB 左右。所以，使用 Sublime 打开 XML时，会有一个较长的加载时间（大型 IDE 可以以只读模式秒加载，但是我这种使用场景不适合开一个 IDE 只用来看一个 XML ），而且滚动屏幕的时候也十分的卡顿
+It contains two questions:
 
-那么，如何通过编程将这两个工具联合起来，免去重复打命令的繁琐操作，隐去中间步骤，提高大体积 XML 读取速度呢？这就导致了本项目的诞生。
+1. Enter similar commands repeatedly every day, and if the tool does not add environment variables, you need to drag and drop the path into the command line, and the recorded file name is usually very long, and you need to drag and drop.
+2. The size of the XML file depends on the size of the FLV file. For reasons of convenient management and fault tolerance, I set the automatic slicing duration of [BililiveRecorder](https://rec.danmuji.org/) to one hour. A live video recording with a bit rate of 4Mbps is about 1.78GB in an hour. In contrast, XML is at least about 28.5MB. Therefore, when using Sublime to open XML, there will be a longer loading time (Large IDEs can be loaded in read-only mode in seconds, but my use case is not suitable for opening an IDE, just look at an XML),  and the screen is also very stuck when scrolling.
 
-## 必要条件
+So, how to combine these two tools through programming, avoid the tedious operation of repeatedly typing commands, hide the intermediate steps, and improve the reading speed of large-volume XML?  This led to the birth of this project.
 
-本项目绝大部分（几乎全部）运行环境已打包进压缩包和Setup，只需注意操作系统。
+## Requirements
 
--   Windows（目前）
--   JDK（可选） `1.8`(`jar`) / `1.6+`(`exe`) ，此处详见[Assets说明](#Assets说明)
+Most (almost all) operating environments of this project have been packaged into compressed packages and Setup, just pay attention to the operating system.
 
-## 安装
+-   Windows（Currently）
+-   JDK（Optional） `1.8`(`jar`) / `1.6+`(`exe`) ，See [Assets description](#Assets description) here for details
+
+## installation
 ### Assets
 
-#### 文件列表
+#### File List
 
 ```
 FirstKeyFrameFilter.exe
@@ -68,141 +70,141 @@ FirstKeyFrameFilter{version-code}-Full_Setup.exe
 FirstKeyFrameFilter{version-code}-Without_JRE.zip
 ```
 
-#### Assets说明
+#### Assets Description
 
--   由于项目依赖了两个 `exe` 可执行文件和 JDK 环境，导致程序体积过大，实际的核心代码只占了相当小的一部分。
-但基本上，依赖的`exe`和 JDK 环境都不会发生变化。所以请在后续更新时**直接下载** `FirstKeyFrameFilter.exe` 以覆盖旧版本。
+-   Because the project relies on two exe executable files and the JDK environment, the program is too large, and the actual core code only occupies a relatively small part.
+But basically, neither the dependent `exe` nor the JDK environment will change.  So please **directly download** `FirstKeyFrameFilter.exe` in subsequent updates to overwrite the old version.
 
--   单独的 `FirstKeyFrameFilter.exe` 无法正常工作，需要同目录下至少存在 `lib-apps` 文件夹和其下的两个 `exe`。错误信息被重定向到当前目录的`error.log`，如果程序没有输出或者黑框一闪而过或者其他异常，请首先查阅此 `log` 文件。
+-   The single `FirstKeyFrameFilter.exe` cannot work normally, and at least the `lib-apps` folder and two `exe`s under it must exist in the same directory. The error message is redirected to the `error.log` in the current directory. If the program does not output or the black box flashes by, or other abnormalities, please refer to the `log` file first.
 
--   `jar` 文件是为了未来可能实现的跨平台程序而上传的，使用方法（命令行）：`java -jar FirstKeyFrameFilter.jar {flvFile}`。
-    注意，必须使用与编译版本（`1.8`）相同的 JDK 版本运行 `jar`，否则会出现`java.lang.UnsupportedClassVersionError: Main : Unsupported major.minor version 52.0`错误。`exe` 程序无此问题。
+-   The `jar` file is uploaded for possible cross-platform programs in the future. How to use (command line):`java -jar FirstKeyFrameFilter.jar {flvFile}`。
+    Note that you must run `jar` with the same JDK version as the compiled version (`1.8`), otherwise it will appear error: `java.lang.UnsupportedClassVersionError: Main : Unsupported major.minor version 52.0`。The `exe` program does not have this problem.
     
--   带有 Full 字样的文件都包含了完整的依赖 `exe` 和 JDK 环境。
+-   The files with the word `Full` contain the complete dependency `exe` and JDK environment.
 
--   如果电脑上已有 JDK 环境（>=`1.6`），即环境变量可访问，则可以删除程序目录下的 `jre1.8.0_161` 文件夹，或下载 `~Without_JRE.zip`。
+-   If there is already a JDK environment (>=`1.6`) on the computer, that is, the environment variables are accessible, you can delete the `jre1.8.0_161` folder in the program directory, or download `~Without_JRE.zip`.
 
-### 安装步骤
+### installation Steps
 
-1.  下载`zip`压缩包或者`~Setup.exe`，如果 JDK 版本大于`1.6`可以下载`~Without_JRE.zip`
-2.  直接解压或跟随安装向导安装
--   更新时直接下载`FirstKeyFrameFilter.exe` 覆盖
--   如果你耐心看完上面的[Assets说明](#Assets说明)，就会发现这只是个总结
+1.  Download the `zip` compressed package or `~Setup.exe`, if the JDK version is greater than `1.6`, you can download `~Without_JRE.zip`
+2.  Unzip directly or follow the installation wizard to install
+-   Directly download `FirstKeyFrameFilter.exe` to cover when updating
+-   If you patiently read the above [Assets Description](#Assets Description), you will find that this is just a summary
 
-### 目录结构描述
+### Directory Structure
 
-必须按以下结构放置程序，保证相对位置，否则无法运行。
+The program must be placed in the following structure to ensure the relative position, otherwise it cannot run.
 
 ```
 FirstKeyFrameFilter
 │ FirstKeyFrameFilter.exe
 │
-├─jre1.8.0_161（可选）
+├─jre1.8.0_161（Optional）
 │
 └─lib-apps
         ffmpeg.exe
         FlvInteractiveRebase.exe
 ```
 
-## 使用方法
+## Usage
 
-1.  拖拽
+1.  Drag File(s)
 
-    将一个或**多个** FLV 文件拖入`FirstKeyFrameFilter.exe`运行，这是<u>最简单直接</u>的方法
+    Drag one or **multiple** FLV files into `FirstKeyFrameFilter.exe` to run, which is the <u>easiest and direct method</u>
 
-2.  命令行
+2.  Command Line
 
-    `FirstKeyFrameFilter.exe test.flv`。其中，`test.flv`是待处理的[缺帧](#问题描述) FLV 视频文件
+    `FirstKeyFrameFilter.exe test.flv`。Among them, `test.flv` is the pending [missing frame](#Problem description) FLV video file
 
-## 项目依赖
+## Project Dependency
 
-+ FlvInteractiveRebase（fib，FLV 文件编辑工具）
++ FlvInteractiveRebase（fib，FLV File editing tool）
 
-  + [录播姬QQ群](https://jq.qq.com/?_wv=1027&k=pJMpD57V)内部测试版 beta 1
+  + [BililiveRecorder QQ Group](https://jq.qq.com/?_wv=1027&k=pJMpD57V) internal beta 1
   + By genteure ( fib-beta@danmuji.org )
-  + 软件核心功能：
-      - 对 FLV 进行 Tag 级别编辑处理，可用于解决各类奇葩问题
-      - 使用简单的文本文件作为命令格式，方便手工编辑...
-      - ...同时也方便编写脚本，实现自动化处理
-      - 命令文件相对更小易于传输，方便协助不太懂 FLV 细节的人修复文件
-  + 软件主要用法（假设软件文件名为 fib）：
-      1. **读取 FLV 文件，生成命令文件**（本项目所依赖）  
-         `./fib parse 有问题的.flv 命令.xml`
-      2. 读取其他供参考或复制数据的 FLV 文件  
-         `./fib parse 其他.flv 其他命令.xml`
-      3. 手动编辑命令文本文件
-      4. 使用修改过的命令文件生成新的 FLV 文件  
-         `./fib build 命令.xml 修复之后.flv`
-      - 查看帮助请运行  
+  + Software core functions:
+      - Tag level editing of FLV can be used to solve all kinds of strange problems
+      - Use a simple text file as the command format for manual editing...
+      - ...At the same time, it is convenient to write scripts and realize automatic processing
+      - The command file is relatively small and easy to transfer, which is convenient for people who do not understand the details of FLV to repair the file
+  + Main software usage（Assuming the software file name is fib）：
+      1. **Read FLV files and generate command files**（This project depends on）  
+         `./fib parse problem.flv command.xml`
+      2. Read other FLV files for reference or copy data  
+         `./fib parse other.flv Other-commands.xml`
+      3. Manually edit command text files
+      4. Use the modified command file to generate a new FLV file  
+         `./fib build command.xml after-repair.flv`
+      - See help please run  
          `./fib help`
   
 + [ffmpeg](https://ffmpeg.org/)
   
-  + 主要用来进行 FLV 无损切割
+  + Mainly used for FLV lossless cutting
 
-## 获取帮助
+## Support
 
--   前往 [Issues](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues) 发布新问题
--   给我发邮件：zsunqian69@gmail.com
+-   Go to [Issues](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues) to post a new question.
+-   Email me: zsunqian69@gmail.com.
 
-## 加入开发
+## Development
 
-开发之前，你需要：
+Before development, you need:
 
--   IntelliJ IDEA 2019.3.3 或其他 Java IDE
--   JDK 1.6+，最好是1.8
+-   IntelliJ IDEA 2019.3.3 or other Java IDE
+-   JDK 1.6+，Preferably 1.8
 
-由`src/Main.java`调用三个模块来完成整个工作，分别是
+Three modules are called by `src/Main.java` to complete the whole work, they are
 
-1.  调用`fib`：读取 FLV，生成 XML
-2.  StAX 解析 XML：读取第二个关键帧的时间
-3.  调用`ffmpeg`：将接收到的时间作为开始时间切割 FLV，在同一文件夹下生成新的文件，源文件不删除
+1.  Call `fib`: read FLV and generate XML
+2.  StAX parsing XML: time to read the second key frame
+3.  Call `ffmpeg`: Cut the FLV with the received time as the start time, generate a new file in the same folder, and the source file will not be deleted
 
-如果你想研究这个项目的源代码，或者修改功能的话，你可以从以上三个模块的入口开始看起：
+If you want to study the source code of this project or modify the functions, you can start from the entry of the above three modules:
 
 1.  `src/XMLGenerator/FlvInteractiveRebase.java`
 2.  `src/XMLParsing/StAX/XMLReader.java`
 3.  `src/FLVCutter/FastForwardMpeg.java`
 
-### 如何打包
+### How to Pack
 
-1.  打包成`jar`：各个 IDE 都有相应的功能，具体方法自查。
-2.  封装成`exe`：使用 exe4j Wizard，配置文件见 `/exe4jConfigFile.exe4j`
-3.  打包成Setup：使用 Inno Setup，配置文件见 `/InnoSetupConfig.iss`
+1.  Packaged into `jar`: Each IDE has corresponding functions, and the specific methods are self-checked.
+2.  Package into `exe`: use exe4j Wizard, see the configuration file `/exe4jConfigFile.exe4j`
+3.  Packaged into Setup: Use Inno Setup, see the configuration file`/InnoSetupConfig.iss`
 
-## 更新日志
+## Changelog
 
 ### [v1.1.0（2020.10.8）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.1.0)
 
-- 修复 因为 indexOf 造成无法正确处理多英文句号文件名的问题。参见 [issue#2](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/2)
-- 优化 提取获取无扩展名的文件名的方法进 Utils，方便调用
-- 修复 调用 ffmpeg 切割视频被 PotPlayer 识别为音频的问题，**相对**兼容，遂版本号升至 1.1.0。参见 [issue#3](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/3)
-- 优化 将时间戳转换为秒的方法转移到 Utils 下，方便调用，符合规范
-- 优化 去除无用的import
+- repair. Because of `indexOf`, the file name with multiple English periods cannot be handled correctly.  See [issue#2](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/2)
+- optimization. Extract the method of obtaining the file name without extension into Utils for easy calling
+- repair.Calling ffmpeg to cut the video is recognized by PotPlayer as an audio problem, which is **relatively compatible**, so the version number is increased to 1.1.0.  See [issue#3](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/3)
+- optimization. The method of converting timestamp to seconds is transferred to `Utils`, which is convenient to call and conforms to the specification
+- optimization. Remove useless `import`
 
 ### [v1.0.1（2020.10.4）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.1)
 
-- 修复 不能处理缺帧时长在 1s 内的情况，比如 0.15s。
+- repair. It cannot handle the case where the missing frame duration is within 1s, such as 0.15s.
 
 ### [v1.0.0（2020.9.5）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.0)
 
-一切的开始
+The beginning of everything
 
-#### 存在的问题
+#### Problem
 
-- 如果电脑上存在 *lib-apps* 中程序的环境变量，仍然不能删除此文件夹，详见 [issue#1](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/1)。
+- If the environment variables of the program in *lib-apps* exist on the computer, this folder still cannot be deleted, see [issue#1](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/1) for details.
 
-## 典型样例链接
+## Typical Sample Link
 
--   [百度云](https://pan.baidu.com/s/15g8sDAWVIvRAYuHxmzCAgw)，提取码：7w1w
+-   [Baidu Net Disk](https://pan.baidu.com/s/15g8sDAWVIvRAYuHxmzCAgw), Extraction code: 7w1w
 -   [OneDrive](https://mg001uolacnz-my.sharepoint.com/:f:/g/personal/2159_zaihua_istore_app/EnkzwmrNympBt5KdVJh2a7oBacx3D6o-Zy8L8cjhOFIJdg)
 
-### 文件说明
+### File Description
 
-1.  `TypicalFLV`是有问题的录播视频文件，未经处理，由[录播姬](https://rec.danmuji.org/)直出，会**持续更新**。一小部分未存在缺帧问题但有其他问题的文件也在其中，已特别标注。
-2.  `TypicalXML`是由 fib（详见[项目依赖](#项目依赖)）分析生成的文件，是当时研发XML解析时留下的样例，现已不再更新。其中带有`TypicalCase`字样的文件来源于缺帧视频（即`TypicalFLV`）。
-3.  `DanmakuXML`是[录播姬](https://rec.danmuji.org/)`1.1.20`新增的弹幕文件，将未压制投稿的弹幕文件存档于此，与本项目没什么关系……
+1.  `TypicalFLV` is the recorded video file in question. It is unprocessed and will be exported directly from [BililiveRecorder](https://rec.danmuji.org/) and will be **continuously updated**.  A small number of files that do not have missing frames but have other problems are also included and have been specially marked.
+2.  `TypicalXML` are files generated by fib (see [Project Dependency](#Project Dependency)) analysis, which is a sample left over from the development of XML parsing and is no longer updated. The files with the word `TypicalCase` in them come from the missing frame video (i.e. `TypicalFLV`).
+3.  `DanmakuXML` are newly added danmaku files in BililiveRecorder 1.1.20. The danmaku files that have not been suppressed and submitted are archived here, which has nothing to do with this project...
 
-## 开源协议
+## Open Source Agreement
 
 [GNU General Public License v3.0](https://github.com/Aric-Sun/FirstKeyFrameFilter/blob/master/LICENSE)
