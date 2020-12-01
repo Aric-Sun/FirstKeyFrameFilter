@@ -2,14 +2,6 @@
 
 [简体中文 | Simplified Chinese](README_CN.md)
 
-------
-
-[TOC]
-
-------
-
-
-
 ## Feature
 
 Solve the problem of recording file [missing frame](#Problem description), eliminates the process of [manual operation](#Solution optimization)
