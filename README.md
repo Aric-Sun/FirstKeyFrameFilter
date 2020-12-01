@@ -2,6 +2,14 @@
 
 [简体中文 | Simplified Chinese](README_CN.md)
 
+------
+
+[TOC]
+
+------
+
+
+
 ## Feature
 
 Solve the problem of recording file [missing frame](#Problem description), eliminates the process of [manual operation](#Solution optimization)
@@ -25,7 +33,7 @@ Since I did not go to a large number of live broadcasts of other anchors to veri
 
 ### Initial Solution
 
-To solve this problem, the more brainless solution is to recode and suppress (Format Factory/Maruko's Toolbox), but this solution takes a long time and consumes a lot of resources, which is not suitable for my thin and light notebook. Non-destructive cutting is the solution that suits me. Using the `-ss` and `-c copy` parameters of FFmpeg, the missing frame can be quickly cut off (just cut the missing frame at the beginning, if there is a missing frame at the end, it will not cause the video, audio and picture of station B to be out of sync, and generally there is no), then the value of the `-ss` parameter is the time when the screen just started moving.
+To solve this problem, the more brainless solution is to recode and suppress (Format Factory/Maruko's Toolbox), but this solution takes a long time and consumes a lot of resources, which is not suitable for my thin and light notebook. Non-destructive cutting is the solution that suits me. Using the `-ss` and `-c copy` parameters of FFmpeg, the missing frame can be **quickly** cut off (just cut the missing frame at the beginning, if there is a missing frame at the end, it will not cause the video, audio and picture of station B to be out of sync, and generally there is no), then the value of the `-ss` parameter is the time when the screen just started moving.
 
 ### Principle Explanation
 
@@ -33,7 +41,7 @@ The above sentence is easy to understand. Start wherever there is no problem, bu
 
 ### Advanced Solutions
 
-In the beginning, I saw it with the naked eye, adding and subtracting in units of `1s` (a few tenths of a second is difficult to estimate with the naked eye). Sometimes it will be corrected by FFmpeg (The `-ss` parameter is to let FFmpeg find (seeking) keyframes **around here**, which refers to [FFmpeg official documentation](http://trac.ffmpeg.org/wiki/Seeking)), most of the time it will cause new missing frames, that is, FFmpeg did not find the key frame in a limited range. If it is earlier than the actual key frame, the duration of the missing frame will be a little shorter; if it is cut after the key frame, then the generated video will miss the frame to the next key frame. If you fine-tune it at this time, it will undoubtedly be a waste of time. So, how to get the accurate key frame position? With Genteure's fib (see [Project Dependence](#Project Dependency)), you can find the location of the **second** key frame in the parsed XML file, and then use FFmpeg to cut this location (  Assign the second key frame time to the `-ss` parameter).
+In the beginning, I saw it with the naked eye, adding and subtracting in units of `1s` (a few tenths of a second is difficult to estimate with the naked eye). Sometimes it will be corrected by FFmpeg (The `-ss` parameter is to let FFmpeg find (seeking) keyframes **around here**, which refers to [FFmpeg official documentation](http://trac.ffmpeg.org/wiki/Seeking)), most of the time it will cause new missing frames, that is, FFmpeg did not find the key frame in a limited range. If it is earlier than the actual key frame, the duration of the missing frame will be a little shorter; if it is cut after the key frame, then the generated video will miss the frame to the next key frame. If you fine-tune it at this time, it will undoubtedly be a waste of time. So, how to get the accurate key frame position? With Genteure's fib (see [Project Dependence](#Project Dependency)), you can find the location of the **second** key frame in the parsed XML file, and then use FFmpeg to cut this location (Assign the second key frame time to the `-ss` parameter).
 
 ### Solution Optimization
 
@@ -54,8 +62,8 @@ So, how to combine these two tools through programming, avoid the tedious operat
 
 Most (almost all) operating environments of this project have been packaged into compressed packages and Setup, just pay attention to the operating system.
 
--   Windows（Currently）
--   JDK（Optional） `1.8`(`jar`) / `1.6+`(`exe`) ，See [Assets description](#Assets description) here for details
+-   Windows (Currently) 
+-   JDK (Optional)  `1.8`(`jar`) / `1.6+`(`exe`) ，See [Assets description](#Assets description) here for details
 
 ## installation
 ### Assets
@@ -99,7 +107,7 @@ The program must be placed in the following structure to ensure the relative pos
 FirstKeyFrameFilter
 │ FirstKeyFrameFilter.exe
 │
-├─jre1.8.0_161（Optional）
+├─jre1.8.0_161 (Optional) 
 │
 └─lib-apps
         ffmpeg.exe
@@ -118,7 +126,7 @@ FirstKeyFrameFilter
 
 ## Project Dependency
 
-+ FlvInteractiveRebase（fib，FLV File editing tool）
++ FlvInteractiveRebase (fib，FLV File editing tool) 
 
   + [BililiveRecorder QQ Group](https://jq.qq.com/?_wv=1027&k=pJMpD57V) internal beta 1
   + By genteure ( fib-beta@danmuji.org )
@@ -127,8 +135,8 @@ FirstKeyFrameFilter
       - Use a simple text file as the command format for manual editing...
       - ...At the same time, it is convenient to write scripts and realize automatic processing
       - The command file is relatively small and easy to transfer, which is convenient for people who do not understand the details of FLV to repair the file
-  + Main software usage（Assuming the software file name is fib）：
-      1. **Read FLV files and generate command files**（This project depends on）  
+  + Main software usage (Assuming the software file name is fib) ：
+      1. **Read FLV files and generate command files** (This project depends on)   
          `./fib parse problem.flv command.xml`
       2. Read other FLV files for reference or copy data  
          `./fib parse other.flv Other-commands.xml`
@@ -174,19 +182,19 @@ If you want to study the source code of this project or modify the functions, yo
 
 ## Changelog
 
-### [v1.1.0（2020.10.8）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.1.0)
+### [v1.1.0 (2020.10.8) ](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.1.0)
 
 - repair: Because of `indexOf`, the file name with multiple English periods cannot be handled correctly.  See [issue#2](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/2)
 - optimization: Extract the method of obtaining the file name without extension into `Utils` for easy calling
-- repair: Calling FFmpeg to cut the video is recognized by PotPlayer as an audio problem, which is **relatively compatible**, so the version number is increased to 1.1.0.  See [issue#3](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/3)
+- repair: Calling FFmpeg to cut the video is recognized by PotPlayer as an audio problem, which is **relatively** compatible, so the version number is increased to 1.1.0.  See [issue#3](https://github.com/Aric-Sun/FirstKeyFrameFilter/issues/3)
 - optimization: The method of converting timestamp to seconds is transferred to `Utils`, which is convenient to call and conforms to the specification
 - optimization. Remove useless `import`
 
-### [v1.0.1（2020.10.4）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.1)
+### [v1.0.1 (2020.10.4) ](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.1)
 
 - repair: It cannot handle the case where the missing frame duration is within 1s, such as 0.15s.
 
-### [v1.0.0（2020.9.5）](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.0)
+### [v1.0.0 (2020.9.5) ](https://github.com/Aric-Sun/FirstKeyFrameFilter/releases/tag/v1.0.0)
 
 The beginning of everything
 
@@ -203,7 +211,7 @@ The beginning of everything
 
 1.  `TypicalFLV` is the recorded video file in question. It is unprocessed and will be exported directly from [BililiveRecorder](https://rec.danmuji.org/) and will be **continuously updated**.  A small number of files that do not have missing frames but have other problems are also included and have been specially marked.
 2.  `TypicalXML` are files generated by fib (see [Project Dependency](#Project Dependency)) analysis, which is a sample left over from the development of XML parsing and is no longer updated. The files with the word `TypicalCase` in them come from the missing frame video (i.e. `TypicalFLV`).
-3.  `DanmakuXML` are newly added danmaku files in BililiveRecorder 1.1.20. The danmaku files that have not been suppressed and submitted are archived here, which has nothing to do with this project...
+3.  `DanmakuXML` are newly added danmaku files in [BililiveRecorder](https://rec.danmuji.org/) 1.1.20. The danmaku files that have not been suppressed and submitted are archived here, which has nothing to do with this project...
 
 ## Open Source Agreement
 
